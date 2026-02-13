@@ -1,5 +1,5 @@
 import { test as base } from '@playwright/test';
-import credentials from '../test-data/credentials.json';
+import testUsers from '../test-data/testUsers.json';
 
 type MyFixtures = {
     createUserViaAPI: () => Promise<void>;
@@ -11,8 +11,8 @@ export const test = base.extend<MyFixtures>({
       const res = await request.post(`${process.env.API_URL}/signup`, {
         headers: { Accept: 'application/json' },
         data: {
-          firstName: credentials.validUser.firstName,
-          lastName: credentials.validUser.lastName,
+          firstName: testUsers.validUser.firstName,
+          lastName: testUsers.validUser.lastName,
           email: process.env.EMAIL,
           password: process.env.PASSWORD,
           password2: process.env.PASSWORD,
