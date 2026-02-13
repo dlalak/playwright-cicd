@@ -7,8 +7,27 @@ on:
     branches: [master, release/*, develop]
 
 jobs:
-  e2e:
-    name: E2E (${{ matrix.project }})
+  lint-playwright:
+    name: Lint Playwright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Lint Playwright e2e
+        run: npm run lint:playwright
+
+  playwright:
+    name: Playwright (${{ matrix.project }})
+    needs: lint-playwright
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -41,7 +60,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E
+      - name: Run Playwright e2e
         env:
           BASE_URL: http://localhost:3000
           API_URL: http://localhost:8000
@@ -63,7 +82,7 @@ jobs:
   deploy-report:
     name: Deploy Playwright report to GitHub Pages
     if: ${{ (github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release/'))) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
-    needs: e2e
+    needs: playwright
     runs-on: ubuntu-latest
     permissions:
       pages: write
