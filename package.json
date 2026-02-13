@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "eslint --fix **/src/",
+    "lint:playwright": "npm exec --yes --package=eslint@9 --package=@typescript-eslint/parser -c \"eslint --config playwright/eslint.config.mjs playwright/**/*.ts\"",
     "test:all": "playwright test --config=playwright/playwright.config.ts",
     "test:smoke": "playwright test --config=playwright/playwright.config.ts --tag=@Smoke",
     "test:chromium": "playwright test --config=playwright/playwright.config.ts --project=\"Desktop Chrome\"",
