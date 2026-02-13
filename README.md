@@ -1,154 +1,187 @@
-<h1 align="center">
-🌐 MERN Stack
-</h1>
-<p align="center">
-MongoDB, Expressjs, React/Redux, Nodejs
-</p>
+# MERN App with Automated Testing
 
-<p align="center">
-   <a href="https://github.com/amazingandyyy/mern/blob/master/LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-green.svg" />
-   </a>
-   <a href="https://circleci.com/gh/amazingandyyy/mern">
-      <img src="https://circleci.com/gh/amazingandyyy/mern.svg?style=svg" />
-   </a>
-</p>
+Full-stack MERN application (MongoDB, Express, React, Node.js) with a focus on automated testing using Playwright
 
-> MERN is a fullstack implementation in MongoDB, Expressjs, React/Redux, Nodejs.
+## Tech Stack
 
-MERN stack is the idea of using Javascript/Node for fullstack web development.
+- Frontend: React 17, Redux, React Router, Axios
+- Backend: Node.js, Express, Mongoose, JWT
+- Database: MongoDB
+- Testing: Playwright
+- CI/CD: GitHub Actions + GitHub Pages (Playwright HTML reports)
+- Containers: Docker Compose
 
-## clone or download
-```terminal
-$ git clone https://github.com/amazingandyyy/mern.git
-$ yarn # or npm i
-```
+## Project Structure
 
-## project structure
-```terminal
-LICENSE
-package.json
-server/
-   package.json
-   .env (to create .env, check [prepare your secret session])
-client/
-   package.json
-...
+```text
+.
+|- client/                 # React app
+|- server/                 # Express API
+|- playwright/             # Tests, fixtures, test-data, config files
+|- .github/workflows/      # CI workflows
+|- docker-compose.yml      # Local stack (mongo + server + client)
+`- package.json            # Root scripts
 ```
 
 # Usage (run fullstack app on your machine)
 
 ## Prerequisites
-- [MongoDB](https://gist.github.com/nrollr/9f523ae17ecdbb50311980503409aeb3)
-- [Node](https://nodejs.org/en/download/) ^10.0.0
-- [npm](https://nodejs.org/en/download/package-manager/)
 
-notice, you need client and server runs concurrently in different terminal session, in order to make them talk to each other
+- Node.js 20+
+- npm 9+
+- Docker Desktop
 
-## Client-side usage(PORT: 3000)
-```terminal
-$ cd client          // go to client folder
-$ yarn # or npm i    // npm install packages
-$ npm run dev        // run it locally
+## Environment Variables
 
-// deployment for client app
-$ npm run build // this will compile the react code using webpack and generate a folder called docs in the root level
-$ npm run start // this will run the files in docs, this behavior is exactly the same how gh-pages will run your static site
+### 1) Root `.env` (used by Docker Compose)
+
+Create a file `.env` in the repository root:
+
+```env
+MONGODB_URI=mongodb://mongo:27017/mern
+JWT_SECRET=your-strong-jwt-secret
 ```
 
-## Server-side usage(PORT: 8000)
+## Run the Application
 
-### Prepare your secret
+Run everything with Docker Compose:
 
-run the script at the first level:
-
-(You need to add a JWT_SECRET in .env to connect to MongoDB)
-
-```terminal
-// in the root level
-$ cd server
-$ echo "JWT_SECRET=YOUR_JWT_SECRET" >> src/.env
+```bash
+npm ci
+docker compose up -d --build
 ```
 
-### Start
+Services:
+- Client: `http://localhost:3000`
+- API: `http://localhost:8000`
+- Health check endpoint: `http://localhost:8000/ping`
 
-```terminal
-$ cd server   // go to server folder
-$ npm i       // npm install packages
-$ npm run dev // run it locally
-$ npm run build // this will build the server code to es5 js codes and generate a dist file
+Stop:
+
+```bash
+docker compose down
 ```
 
-## Deploy Server to [Heroku](https://dashboard.heroku.com/)
-```terminal
-$ npm i -g heroku
-$ heroku login
-...
-$ heroku create
-$ npm run heroku:add <your-super-amazing-heroku-app>
-// remember to run this command in the root level, not the server level, so if you follow the documentation along, you may need to do `cd ..`
-$ pwd
-/Users/<your-name>/mern
-$ npm run deploy:heroku
+## Playwright Tests
+
+### What is covered
+
+- Login scenarios:
+  - valid credentials
+  - invalid email
+  - invalid password
+- Registration scenarios:
+  - valid registration
+  - password mismatch
+  - existing email
+- Smoke subset:
+  - tagged with `@Smoke` for fast confidence checks
+
+### Test architecture
+
+- `playwright/tests/` - test specs
+- `playwright/pages/` - page object models
+- `playwright/fixtures/fixtures.ts` - reusable fixtures (including API setup)
+- `playwright/test-data/testUsers.json` - static test data
+- `playwright/playwright.config.ts` - projects
+
+### Using Faker in tests
+
+Faker is used in `playwright/tests/registration.spec.ts` to generate unique, realistic values per run:
+- `faker.person.firstName()` and `faker.person.lastName()` for profile inputs
+- `faker.internet.email()` to avoid collisions in signup tests
+- `faker.internet.password()` for password flows
+
+### Environment required by tests
+
+Required for full test reliability:
+- `BASE_URL` (default `http://localhost:3000`)
+- `API_URL` (usually `http://localhost:8000`)
+- `EMAIL`
+- `PASSWORD`
+
+Install browser dependencies:
+
+```bash
+npx playwright install --with-deps chromium
 ```
 
-### After creating heroku
+Run all tests:
 
-if using webpack:
-remember to update the file of [client/webpack.prod.js](https://github.com/amazingandyyy/mern/blob/master/client/webpack.prod.js)
-```javascript
- 'API_URI': JSON.stringify('https://your-super-amazing-heroku-app.herokuapp.com')
+```bash
+npm run test:all
 ```
-if using parcel
-remember to update the file of [client/.env.production](https://github.com/amazingandyyy/mern/blob/master/client/.env.production.js)
+
+Run smoke tests only:
+
+```bash
+npm run test:smoke
 ```
- REACT_APP_API_URI=https://your-super-amazing-heroku-app.herokuapp.com
+
+Run by project:
+
+```bash
+npm run test:desktop
+npm run test:mobile
 ```
-# Dependencies(tech-stacks)
-Client-side | Server-side
---- | ---
-axios: ^0.15.3 | bcrypt-nodejs: ^0.0.3
-babel-preset-stage-1: ^6.1.18|body-parser: ^1.15.2
-lodash: ^3.10.1 | cors: ^2.8.1
-react: ^16.2.0 | dotenv: ^2.0.0
-react-dom: ^16.2.0 | express: ^4.14.0
-react-redux: ^4.0.0 | jwt-simple: ^0.5.1
-react-router-dom: ^4.2.2 | mongoose: ^4.7.4
-redux: ^3.7.2 | morgan: ^1.7.0
-redux-thunk: ^2.1.0 |
 
-# Screenshots of this project
+Run selected suites:
 
-User visit public and Home page
-![User visit public and Home page](http://i.imgur.com/ORCGHHY.png)
+```bash
+npm run test:login
+npm run test:registration
+```
 
-User can sign in or sign up
-![User can sign in or sign up](http://i.imgur.com/rrmbU5I.png)
+### Recommended local test flow
 
-After signing in user can go to account route and make request to token-protected API endpoint
-![After signing in user can go to account route](http://i.imgur.com/FzLB51u.png)
+1. Start full stack with Docker:
+   - `docker compose up -d --build`
+2. Verify services:
+   - client on `http://localhost:3000`
+   - api on `http://localhost:8000/ping`
+3. Run smoke first:
+   - `npm run test:smoke`
+4. Run full matrix locally:
+   - `npm run test:chromium`
+   - `npm run test:mobile`
 
-## Standard
+### Debugging failed tests
 
-[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+- Use UI mode for step-by-step diagnosis
+- Inspect generated `playwright-report/`
+- Re-run only one suite (`login` or `registration`) to isolate failures
 
-## BUGs or comments
+### Playwright linting safeguards
 
-[Create new Issues](https://github.com/amazingandyyy/mern/issues) (preferred)
+Before pushing changes, run:
 
-Email Me: amazingandyyy@gmail.com (welcome, say hi)
+```bash
+npm run lint:playwright
+```
 
-## Author
-[Amazingandyyy](https://amazingandyyy.com)
+What this lint checks:
+- Scope: `playwright/tests/**/*.ts` (test specs)
+- Ignores: `node_modules/`, `dist/`, `playwright-report/`, `test-results/`
+- `no-unused-vars` as warning
+- `quotes` with single quotes (template literals allowed)
+- `no-restricted-properties` as error to block focused runs (`test.only`, `describe.only`, `it.only`)
 
-I recently launch my monthly mentorship program, feel free to reach out and see what we can grow together:
+This lint is also executed in CI before tests, so focused tests cannot be merged by accident.
 
-<a href="https://mentorcruise.com/mentor/andychen/"> <img src="https://cdn.mentorcruise.com/img/banner/fire-sm.svg" width="240" alt="MentorCruise"> </a>
+## CI/CD Overview (Testing Pipeline)
 
-## Join the growing community
+Workflow in `.github/workflows/ci.yaml`:
+- Runs tests checks automatically on:
+  - `push` to `release/*`
+  - `pull_request` to `master`, `release/*`, `develop`
+- Starts Docker stack in CI
+- Executes Playwright tests in a matrix:
+  - Desktop Chrome
+  - Mobile Chrome
+- Uploads Playwright artifacts
+- Publishes reports to GitHub Pages
 
-[![Star History Chart](https://api.star-history.com/svg?repos=amazingandyyy/mern&type=Date)](https://star-history.com/#amazingandyyy/mern&Date)
-
-
-### License
-[MIT](https://github.com/amazingandyyy/mern/blob/master/LICENSE)
+Required GitHub Secrets for tests:
+- `JWT_SECRET`
+- `EMAIL`
+- `PASSWORD`
